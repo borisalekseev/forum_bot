@@ -1,0 +1,34 @@
+from aiogram import types
+from aiogram.dispatcher import FSMContext
+
+from aiogram_datepicker import Datepicker, DatepickerSettings
+
+import messages
+from states import NewPost
+from config import dp
+
+
+def _get_datepicker_settings():
+    return DatepickerSettings()
+
+
+@dp.message_handler(content_types=types.ContentType.PHOTO, state=NewPost.photo)
+async def new_post_photo(message: types.Message, state: FSMContext, album: list[str] = None):
+    """
+    :param state:
+    :param message:
+    :param album:  middlewares.album.AlbumMiddleware передаёт список file_id (в самом лучшем доступном качестве)
+    Если будет отправлено одно фото, обработает так же, как и middleware
+    """
+    if album is None:
+        album = [message.photo[-1].file_id]
+    await state.update_data(album=album)
+    await NewPost.next()
+
+    datepicker = Datepicker(_get_datepicker_settings())
+    await message.answer(messages.NEW_POST_DATE, reply_markup=datepicker.start_calendar())
+
+
+@dp.message_handler(state=NewPost.photo)
+async def photo_bad(message: types.Message, state: FSMContext, album: list[str] = None):
+    await message.answer(messages.NEW_POST_BAD)
