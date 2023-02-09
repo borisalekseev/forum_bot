@@ -1,3 +1,5 @@
 aiogram==2.25.1
 python-dotenv==0.21.1
-aiogram_calendar==0.1.1
+aioschedule==0.5.2
+tortoise-orm==0.19.2
+aerich==0.7.1
