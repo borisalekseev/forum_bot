@@ -7,7 +7,7 @@ from config import dp
 import messages
 from utils import PostInfo
 
-from jobs import plane_posts
+# from jobs import plane_posts
 
 
 @dp.message_handler(Regexp(r'\d{1,3}'), state=NewPost.duration)

@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Regexp
 
-from config import dp, STRPTIME_PATTERN
+from config import dp
 from utils import TimeValidationError, validate_time
 from states import NewPost
 import messages

@@ -1,15 +1,9 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from aiogram_datepicker import Datepicker, DatepickerSettings
-
 import messages
 from states import NewPost
 from config import dp
-
-
-def _get_datepicker_settings():
-    return DatepickerSettings()
 
 
 @dp.message_handler(content_types=types.ContentType.PHOTO, state=NewPost.photo)
@@ -25,8 +19,7 @@ async def new_post_photo(message: types.Message, state: FSMContext, album: list[
     await state.update_data(album=album)
     await NewPost.next()
 
-    datepicker = Datepicker(_get_datepicker_settings())
-    await message.answer(messages.NEW_POST_DATE, reply_markup=datepicker.start_calendar())
+    await message.answer(messages.NEW_POST_TIME)
 
 
 @dp.message_handler(state=NewPost.photo)

@@ -1,3 +1,5 @@
+import asyncio
+
 import aiogram
 from aiogram import executor
 
