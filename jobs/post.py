@@ -1,12 +1,14 @@
 import asyncio
 import datetime
 
+from aiogram import types
+
 from database import Post, PostTask
 from utils import PostInfo
 from config import bot
 
 
-async def wait_for_datetime(wait_for: datetime.datetime) -> None:
+async def wait_for_datetime(wait_for: datetime.datetime):
     interval = wait_for - datetime.datetime.now()
     if interval.seconds < 0:
         # ToDo warning / processing
@@ -14,7 +16,7 @@ async def wait_for_datetime(wait_for: datetime.datetime) -> None:
     await asyncio.sleep(interval.seconds)
 
 
-async def plane_posts(data: PostInfo) ->  None:
+async def plane_posts(data: PostInfo):
     """Takes post data from FSMContext and create the nearest task & writes it to base"""
     post = await Post.create(
         text=data.text,
@@ -41,20 +43,42 @@ async def create_post_tasks(post_id: int, first_datetime: datetime.datetime, dur
         )
 
 
-async def create_start_tasks():
-    now = datetime.datetime.now()
-    planned = set()
+async def on_start_tasks():
 
-    async for post_task in PostTask.filter(done=False):
-        if post_task.datetime < now:
-            await do_post(post_task.post_id, post_task.topics.split('|'))
-            planned.add(post_task.post_id)
+    while True:
 
-    async for post_task in PostTask.filter(done=False).exclude(id__in=list(planned)):
-        if post_task.post_id in planned:
-            continue
-        await do_post(post_task.post_id, post_task.topics.split('|'), at=post_task.datetime)
+        async for post_task in PostTask.filter(done=False, planned=False, failed=False):
+            now = datetime.datetime.now()
+            if post_task.datetime < now:
+                post_task.planned = True
+                await post_task.save()
+                await do_post(post_task.post_id, post_task.id, post_task.topics.split('|'), at=post_task.datetime)
+            else:
+                post_task.failed = True
+                await post_task.save()
 
 
-async def do_post(post_id: int, topics: list[str], at: datetime = None) -> None:
-    bot.send_
+async def on_shutdown_tasks():
+    async for post_task in PostTask.filter(done=False, planned=True, failed=False):
+        post_task.planned = False
+        await post_task.save()
+
+
+async def do_post(post_id: int, task_id: int, topics: list[str], at: datetime.datetime = None):
+    post = await Post.get(id=post_id)
+    media = [types.InputMediaPhoto(media=file_id) for file_id in post.photos]
+    seconds_to_sleep = at - datetime.datetime.now()
+    await asyncio.sleep(seconds_to_sleep.total_seconds())
+    for topic in topics:
+        await bot.send_media_group(chat_id=int(topic), caption=post.text, media=media)
+
+    task = await PostTask.get(id=task_id)
+    task.done = True
+    await task.save()
+
+
+async def check_new_posts():
+    while True:
+        async for post_task in PostTask.filter(done=False, planned=False, failed=False):
+            await do_post(post_task.post_id, post_task.id, post_task.topics.split('|'), at=post_task.datetime)
+        await asyncio.sleep(10)

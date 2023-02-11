@@ -12,8 +12,11 @@ class PostTask(Model):
     id = fields.IntField(pk=True)
     post_id = fields.ForeignKeyField("models.Post")
     datetime = fields.DatetimeField()
-    done = fields.BooleanField(default=False)
     topics = fields.TextField()
+
+    done = fields.BooleanField(default=False)
+    planned = fields.BooleanField(default=False)
+    failed = fields.BooleanField(default=False)
 
 
 __models__ = [Post, PostTask]
