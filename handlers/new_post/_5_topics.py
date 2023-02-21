@@ -1,27 +1,33 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Regexp
 
 from states import NewPost
 from config import dp
 import messages
-from utils import PostInfo
+from utils import PostInfo, get_topics, change_topics
 
-# from jobs import plane_posts
+from jobs import plane_posts
 
 
-@dp.message_handler(Regexp(r'\d{1,3}'), state=NewPost.duration)
-async def topics_choice(message: types.Message, state: FSMContext):
-    duration = int(message.text)
-    await state.update_data(duration=duration)
-    post_data = await state.get_data()
-    post = PostInfo(**post_data)
-    # plan task, save it
+@dp.callback_query_handler(state=NewPost.duration)
+async def topics_choice(call: types.CallbackQuery, state: FSMContext):
+    if call.data == "choose_topic_ready":
+        topics = '|'.join(get_topics(call.message.reply_markup.inline_keyboard))
+        await state.update_data(topics=topics)
+        post_dict = await state.get_data()
+        post_data = PostInfo(**post_dict)
+        await plane_posts(post_data)
 
-    await state.finish()
-    await message.answer(messages.NEW_POST_SUCCESS)
+        await state.finish()
+        return await call.message.answer(messages.NEW_POST_SUCCESS)
+
+    _, key, str_condition = call.data.split("|")
+    condition = True if str_condition == "true" else False
+    keyboard = call.message.reply_markup
+    new_keyboard = change_topics(keyboard, key, condition)
+    await call.message.edit_reply_markup(reply_markup=new_keyboard)
 
 
 @dp.message_handler(state=NewPost.duration)
-async def date_choice_bad(message: types.Message):
+async def topics_choice_bad(message: types.Message):
     await message.answer(messages.NEW_POST_BAD)

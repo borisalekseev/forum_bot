@@ -11,3 +11,9 @@ import messages
 async def new_post(message: types.Message, state: FSMContext):
     await message.answer(messages.NEW_POST_TEXT)
     await NewPost.text.set()
+
+
+@dp.message_handler(Command("reset"))
+async def new_post(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer(messages.NEW_POST_TEXT)

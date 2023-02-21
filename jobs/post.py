@@ -32,33 +32,32 @@ async def plane_posts(data: PostInfo):
                 now.date() + datetime.timedelta(hours=time.hour, minutes=time.minute), time
             )
 
-        await create_post_tasks(post.id, first_datetime, PostInfo.duration)
+        await create_post_tasks(post.id, first_datetime, data.duration)
 
 
-async def create_post_tasks(post_id: int, first_datetime: datetime.datetime, duration: int) -> None:
+async def create_post_tasks(post_id: int, first_datetime: datetime.datetime, duration: int, topics: str) -> None:
     for day in range(duration):
         await PostTask.create(
             post_id=post_id,
-            datetime=first_datetime + datetime.timedelta(days=day)
+            datetime=first_datetime + datetime.timedelta(days=day),
+            topics=topics
         )
 
 
 async def on_start_tasks():
 
-    while True:
-
-        async for post_task in PostTask.filter(done=False, planned=False, failed=False):
-            now = datetime.datetime.now()
-            if post_task.datetime < now:
-                post_task.planned = True
-                await post_task.save()
-                await do_post(post_task.post_id, post_task.id, post_task.topics.split('|'), at=post_task.datetime)
-            else:
-                post_task.failed = True
-                await post_task.save()
+    async for post_task in PostTask.filter(done=False, planned=False, failed=False):
+        now = datetime.datetime.now()
+        if post_task.datetime < now:
+            post_task.planned = True
+            await post_task.save()
+            await do_post(post_task.post_id, post_task.id, post_task.topics.split('|'), at=post_task.datetime)
+        else:
+            post_task.failed = True
+            await post_task.save()
 
 
-async def on_shutdown_tasks():
+async def on_shutdown_tasks(dp):
     async for post_task in PostTask.filter(done=False, planned=True, failed=False):
         post_task.planned = False
         await post_task.save()
@@ -78,6 +77,7 @@ async def do_post(post_id: int, task_id: int, topics: list[str], at: datetime.da
 
 
 async def check_new_posts():
+    await asyncio.sleep(10)
     while True:
         async for post_task in PostTask.filter(done=False, planned=False, failed=False):
             await do_post(post_task.post_id, post_task.id, post_task.topics.split('|'), at=post_task.datetime)

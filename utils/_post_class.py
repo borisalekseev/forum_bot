@@ -8,3 +8,4 @@ class PostInfo:
     photos: list[str]
     times: list[datetime.time]
     duration: int
+    topics: str

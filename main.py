@@ -1,13 +1,25 @@
+import asyncio
+
 import aiogram
 from aiogram import executor
 
 from handlers import dp
 from config import ACCESS_ID_LIST
 from middlewares import AlbumMiddleware, AccessMiddleware
-from jobs import on_shutdown_tasks, on_start_tasks
+from jobs import on_shutdown_tasks, on_start_tasks, check_new_posts
+
+from database.initialize import init
+
+async def useless():
+    while True:
+        await asyncio.sleep(1)
+        print('a')
 
 
 async def on_startup(dispatcher: aiogram.Dispatcher):
+    await init()
+    loop = asyncio.get_event_loop()
+    loop.create_task(useless())
     dispatcher.setup_middleware(AlbumMiddleware())
     dispatcher.setup_middleware(AccessMiddleware(ACCESS_ID_LIST))
     await on_start_tasks()

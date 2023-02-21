@@ -18,5 +18,8 @@ class PostTask(Model):
     planned = fields.BooleanField(default=False)
     failed = fields.BooleanField(default=False)
 
+    class Meta:
+        default_connection = 'default'
+
 
 __models__ = [Post, PostTask]
