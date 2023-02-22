@@ -15,7 +15,7 @@ async def time_choice(message: types.Message, state: FSMContext):
         post_times = times
         data.update(post_times=post_times)
 
-    await state.finish()
+    await NewPost.next()
     await message.answer(messages.NEW_POST_DURATION_DAYS)
 
 
