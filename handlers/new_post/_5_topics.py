@@ -9,7 +9,7 @@ from utils import PostInfo, get_topics, change_topics
 from jobs import plane_posts
 
 
-@dp.callback_query_handler(state=NewPost.duration)
+@dp.callback_query_handler(state=NewPost.topics)
 async def topics_choice(call: types.CallbackQuery, state: FSMContext):
     if call.data == "choose_topic_ready":
         topics = '|'.join(get_topics(call.message.reply_markup.inline_keyboard))
@@ -21,6 +21,8 @@ async def topics_choice(call: types.CallbackQuery, state: FSMContext):
         await state.finish()
         return await call.message.answer(messages.NEW_POST_SUCCESS)
 
+    print(call.data)
+
     _, key, str_condition = call.data.split("|")
     condition = True if str_condition == "true" else False
     keyboard = call.message.reply_markup
@@ -28,6 +30,6 @@ async def topics_choice(call: types.CallbackQuery, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=new_keyboard)
 
 
-@dp.message_handler(state=NewPost.duration)
+@dp.message_handler(state=NewPost.topics)
 async def topics_choice_bad(message: types.Message):
     await message.answer(messages.NEW_POST_BAD)

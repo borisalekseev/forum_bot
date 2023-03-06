@@ -5,7 +5,7 @@ import datetime
 @dataclass
 class PostInfo:
     text: str
-    photos: list[str]
+    photo: list[str]
     times: list[datetime.time]
     duration: int
     topics: str

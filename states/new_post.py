@@ -6,3 +6,4 @@ class NewPost(StatesGroup):
     photo = State()
     times = State()
     duration = State()
+    topics = State()

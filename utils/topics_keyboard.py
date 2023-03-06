@@ -9,9 +9,9 @@ items = {
 
 def topics_select():
     keyboard = InlineKeyboardMarkup()
-    for topic in topics.values():
-        text = f"🚫 {topic.url}"
-        callback_data = f"choose_topic|{topic}|false"
+    for topic, thread_id in topics.items():
+        text = f"🚫 {topic}"
+        callback_data = f"choose_topic|{thread_id}|false"
 
         keyboard.row(
             InlineKeyboardButton(
@@ -25,16 +25,19 @@ def topics_select():
             callback_data="choose_topic_ready"
         )
     )
+    keyboard.add()
     return keyboard
 
 
 def get_topics(keyboard: list[list[InlineKeyboardButton]]):
     topics_to_publish = []
     for line in keyboard:
+        print(line)
         if line[0].callback_data == "choose_topic_ready":
             continue
-        if line[0].callback_data.split('|')[2] == 'true':
-            topics.append(line[1])
+        _, topic_thread_id, cond = line[0].callback_data.split('|')
+        if cond == 'true':
+            topics_to_publish.append(topic_thread_id)
     return topics_to_publish
 
 

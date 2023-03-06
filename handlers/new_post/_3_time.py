@@ -13,7 +13,7 @@ async def time_choice(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         times = validate_time(message.text.strip().split())
         post_times = times
-        data.update(post_times=post_times)
+        data.update(times=post_times)
 
     await NewPost.next()
     await message.answer(messages.NEW_POST_DURATION_DAYS)

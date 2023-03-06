@@ -16,7 +16,7 @@ async def new_post_photo(message: types.Message, state: FSMContext, album: list[
     """
     if album is None:
         album = [message.photo[-1].file_id]
-    await state.update_data(album=album)
+    await state.update_data(photo=album)
     await NewPost.next()
 
     await message.answer(messages.NEW_POST_TIME)

@@ -9,6 +9,8 @@ load_dotenv(find_dotenv())
 TOKEN = os.environ.get("TOKEN")
 ACCESS_ID_LIST = os.environ.get("ACCESS_ID_LIST").split(',')
 
+FORUM_CHAT_ID = os.environ.get("FORUM_CHAT_ID")
+
 TORTOISE_CONFIG = {
     'connections': {
         # Dict format for connection
@@ -28,3 +30,5 @@ TORTOISE_CONFIG = {
         }
     }
 }
+import datetime
+print(datetime.datetime.now(tz=datetime.timezone.utc).tzinfo)
